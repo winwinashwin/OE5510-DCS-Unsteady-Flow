@@ -15,6 +15,7 @@ tspan = 0:dt:t_lim;
 nt = length(tspan);
 
 %% Flow Data
+
 Af = 0.1;     % controls velocity magnitude
 e = 0.25;     % dictates magnitude of oscillation in x-direction
 w = 2*pi/10;  % angular oscillation frequency
@@ -81,7 +82,7 @@ y(y>nx*ny) = y(y>nx*ny) - nx*ny;
 % -- Parameters
 x_begin = 0.10; y_begin = 0.05;
 x_end = 1.90; y_end = 0.95;
-ntrials = 7;
+ntrials = 1;
 v_max = 0.7;
 a1 = 1;  % penalty for duration
 a2 = 1;  % penalty for energy cost
@@ -108,8 +109,8 @@ for i = 1:ntrials
     wp_x = [x_begin; Xgrid_flat(y); x_end];
     wp_y = [y_begin; Ygrid_flat(y); y_end];
 
-%     wp_x = [x_begin; 1.5; 1.55; 0.75; 0.3; 1.2; x_end;];
-%     wp_y = [y_begin; 0.15; 0.75; 0.4; 0.8; 0.2; y_end;];
+    wp_x = [x_begin; 1.5; 1.55; 0.75; 0.3; 1.2; x_end;];
+    wp_y = [y_begin; 0.15; 0.75; 0.4; 0.8; 0.2; y_end;];
 
     nlp.opti.set_value(nlp.params.wp_x, wp_x);
     nlp.opti.set_value(nlp.params.wp_y, wp_y);
@@ -160,7 +161,8 @@ ux_true = reshape(X(1:nx*ny,end) + u_bar(1:nx*ny),[ny nx]);
 emat = urx - ux_true;
 
 % -- Normalize
-f_norm = @(mat) -1+2.*(mat-min(mat,[],'all'))./(max(mat,[],'all')-min(mat,[],'all'));
+f_norm = @(mat) -1+2.*(mat-min(mat,[],'all'))./...
+                (max(mat,[],'all')-min(mat,[],'all'));
 
 ux_true = f_norm(ux_true);
 urx = f_norm(urx);
@@ -173,8 +175,8 @@ close all;
 tke = 100*SIG/sum(SIG);
 figure;
 plot(tke(1:10),'o--k','MarkerFaceColor','k','MarkerSize',4), grid on;
-xlabel('Mode','fontweight','bold');
-ylabel('Energy (%)','fontweight','bold');
+xlabel('Mode','FontWeight','bold');
+ylabel('Energy (%)','FontWeight','bold');
 axis([1 10 0 100]);
 xline(nmodes,'-r');
 text(nmodes+0.1,60,sprintf('r = %d',nmodes));
@@ -190,10 +192,10 @@ saveas(gcf,'figures/pod_mode_energy_dist.png');
 [wp_error,isorted] = sort(wp_error,'descend');
 figure;
 plot(1:size(wp_error,2), wp_error, 's--k','MarkerFaceColor','k'), grid on;
-xlabel('Trials','fontweight','bold');
-ylabel('Error','fontweight','bold');
+xlabel('Trials','FontWeight','bold');
+ylabel('Error','FontWeight','bold');
 xlim([1 size(wp_error,2)]);
-title('Waypoint Trials v/s Reconstruction Error','fontsize',12);
+title('Waypoint Trials v/s Reconstruction Error','FontSize',12);
 set(gcf,'Position',[200 200 800 600]);
 set(gcf,'PaperPositionMode','auto');
 saveas(gcf,'figures/waypoint_selection.png');
@@ -210,10 +212,10 @@ scatter(wp_x(end),wp_y(end),'^k','MarkerFaceColor','k');
 scatter(wp_x(2:end-1),wp_y(2:end-1),10,'ok','MarkerFaceColor','k');
 text(wp_x(2:end-1),wp_y(2:end-1)-0.03,num2str((1:nwaypoints)'));
 plot(x_vals(:),y_vals(:),'k');
-xlabel('X','fontweight','bold');
-ylabel('Y','fontweight','bold');
+xlabel('X','FontWeight','bold');
+ylabel('Y','FontWeight','bold');
 axis([0 x_lim 0 y_lim]);
-title('Optimized Trajectory','fontsize',12);
+title('Optimized Trajectory','FontSize',12);
 pbaspect([x_lim y_lim 1]);
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');
@@ -225,7 +227,8 @@ plt = pcolor(Xgrid,Ygrid,ux_true);
 plt.EdgeColor = 'none';
 plt.FaceColor = 'interp';
 xticks(0:0.5:x_lim); yticks(0:0.5:y_lim);
-title(sprintf('Reference Flow Map (u-component) at t = %.2fs',tspan(end)),'fontsize',12);
+title(sprintf('Reference Flow Map (u-component) at t = %.2fs',...
+      tspan(end)),'FontSize',12);
 pbaspect([x_lim y_lim 1]); colorbar;
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');
@@ -236,7 +239,8 @@ plt = pcolor(Xgrid,Ygrid,urx);
 plt.EdgeColor = 'none';
 plt.FaceColor = 'interp';
 xticks(0:0.5:x_lim); yticks(0:0.5:y_lim);
-title(sprintf('Reconstructed Flow Map (u-component) at t = %.2fs',tspan(end)),'fontsize',12);
+title(sprintf('Reconstructed Flow Map (u-component) at t = %.2fs',...
+      tspan(end)),'FontSize',12);
 pbaspect([x_lim y_lim 1]); colorbar;
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');
@@ -247,7 +251,9 @@ plt = pcolor(Xgrid,Ygrid,emat);
 plt.EdgeColor = 'none';
 plt.FaceColor = 'interp';
 xticks(0:0.5:x_lim); yticks(0:0.5:y_lim);
-title(sprintf('Reconstruction Error Distribution (u-component) at t = %.2fs',tspan(end)),'fontsize',12);
+title(sprintf(...
+      'Reconstruction Error Distribution (u-component) at t = %.2fs',...
+      tspan(end)),'FontSize',12);
 pbaspect([x_lim y_lim 1]); colorbar;
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');

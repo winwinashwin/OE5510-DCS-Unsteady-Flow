@@ -27,6 +27,7 @@ function nlp = build_opti(nseg,t,A,e,w)
         opti.subject_to( sum(ax(:,i)) == wp_x(i+1) );
         opti.subject_to( sum(ay(:,i)) == wp_y(i+1) );
     end
+
     % -- Soft C1 continuity
     for i = 1:nseg-1
         opti.subject_to( ax(2,i+1)-(0:4)*ax(:,i)+sl(i) == 0 );
@@ -34,7 +35,7 @@ function nlp = build_opti(nseg,t,A,e,w)
     end
     opti.subject_to( { sl(:) >= 0, sl(:) <= 0.05 } );
     
-    % -- Constrain all x and y values to flow domain
+    % -- Constrain trajectory to flow domain
     x_vals = tm*ax; y_vals = tm*ay;
     opti.subject_to( { x_vals(:) >= 0, x_vals(:) <= x_lim } );
     opti.subject_to( { y_vals(:) >= 0, y_vals(:) <= y_lim } );
@@ -103,4 +104,3 @@ function nlp = build_opti(nseg,t,A,e,w)
 
     nlp.obj = obj;
 end
-

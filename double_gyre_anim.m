@@ -15,6 +15,7 @@ tspan = 0:dt:t_lim;
 nt = length(tspan);
 
 %% Flow Data
+
 A = 0.1;      % controls velocity magnitude
 e = 0.25;     % dictates magnitude of oscillation in x-direction
 w = 2*pi/10;  % angular oscillation frequency
@@ -23,7 +24,6 @@ w = 2*pi/10;  % angular oscillation frequency
 
 %% Plot
 
-clear xlim ylim;
 close all;
 
 % Double-gyre flow animation
@@ -36,9 +36,9 @@ set(gcf,'Color','w');
 filename = 'figures/double_gyre_flow_anim.gif';
 
 for i = 1:10:nt
-    contourf(Xgrid,Ygrid,stream_fn(:,:,i),50,'edgecolor','none');
+    contourf(Xgrid,Ygrid,stream_fn(:,:,i),50,'EdgeColor','none');
     colorbar;
-    title(sprintf('Double-gyre flow - Stream function (t=%.2fs)', tspan(i)));
+    title(sprintf('Double-gyre flow - Stream function (t=%.2fs)',tspan(i)));
     axis([xspan(1) xspan(end) yspan(1) yspan(end)]);
     pbaspect([x_lim y_lim 1]);
     drawnow;

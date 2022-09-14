@@ -9,4 +9,3 @@ cvx_end;
 
 fprintf('[CVX] Status = %s. Took %.2f seconds\n',cvx_status,cvx_cputime);
 end
-
