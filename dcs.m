@@ -2,7 +2,7 @@ clc; close all; clear all;
 
 x_lim = 2; nx = 50;
 y_lim = 1; ny = 25;
-t_lim = 20;
+t_lim = 40;
 
 dx = x_lim/nx;
 dy = y_lim/ny;
