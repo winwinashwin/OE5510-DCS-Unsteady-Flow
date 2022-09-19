@@ -2,7 +2,7 @@ clc; close all; clear all;
 
 x_lim = 2; nx = 50;
 y_lim = 1; ny = 25;
-t_lim = 40;
+t_lim = 20;
 
 dx = x_lim/nx;
 dy = y_lim/ny;
@@ -29,7 +29,10 @@ u_bar = mean(X,2);  % temporal mean velocity
 X = X - u_bar;      % centered flow velocity
 fprintf('-- Built data matrix\n');
 
-%% Proper Orthogonal Decomposition (POD)
+Xgrid_flat = f_flatten(Xgrid);
+Ygrid_flat = f_flatten(Ygrid);
+
+%% Proper Orthogonal Decomposition
 
 fprintf('-- Running POD...\n');
 % `A`   - Time coefficients
@@ -42,8 +45,24 @@ SIG = diag(SIG).^2;
 toc;
 
 nmodes = 5;  % first 5 modes are sufficient for us
-
 fprintf('-- Using r = %d POD modes\n',nmodes);
+
+% -- POD mode energy distribution plot
+tke = 100*SIG/sum(SIG);
+figure;
+plot(tke(1:10),'o--k','MarkerFaceColor','k','MarkerSize',4), grid on;
+xlabel('Mode','FontWeight','bold');
+ylabel('Energy (%)','FontWeight','bold');
+axis([1 10 0 100]);
+xline(nmodes,'-r');
+text(nmodes+0.1,60,sprintf('r = %d',nmodes));
+cum_energy = sum(tke(1:nmodes));
+cum_energy = fix(100*cum_energy)/100;
+text(nmodes+0.1,55,sprintf('Cum. Energy = ~%.2f%%',cum_energy));
+title('Contribution of First 10 POD modes to Energy','fontsize',12);
+set(gcf,'Position',[200 200 800 600]);
+set(gcf,'PaperPositionMode','auto');
+saveas(gcf,'figures/pod_mode_energy_dist.png');
 
 %% Optimal Waypoint Selection
 
@@ -74,8 +93,47 @@ end
 
 % -- Select waypoints with minimal reconstruction error
 [~,imin] = min(wp_error);
+[~,imax] = max(wp_error);
+
 y = iwaypoints(:,imin);
 y(y>nx*ny) = y(y>nx*ny) - nx*ny;
+
+% -- Waypoint selection - reconstruction error plot
+figure;
+subplot(2,1,1);
+cmap = winter;
+bar(wp_error); axis padded;
+xlabel('Trials','FontWeight','bold');
+ylabel('Error','FontWeight','bold');
+xticks(1:20);
+title('Waypoint Trials v/s Reconstruction Error','FontSize',12);
+
+wp_1 = iwaypoints(:,imin);
+wp_2 = iwaypoints(:,imax);
+wp_1(wp_1 > nx*ny) = wp_1(wp_1 > nx*ny) - nx*ny;
+wp_2(wp_2 > nx*ny) = wp_2(wp_2 > nx*ny) - nx*ny;
+
+subplot(2,2,3);
+scatter(Xgrid_flat(wp_1),Ygrid_flat(wp_1),14,...
+        'pentagramk','MarkerFaceColor','k');
+xlabel('X','FontWeight','bold'); ylabel('Y','FontWeight','bold');
+axis([0 x_lim 0 y_lim]);
+grid on, grid minor, axis on, box on;
+pbaspect([x_lim y_lim 1]);
+title(sprintf('Trial #%d (Min. Error)',imin));
+
+subplot(2,2,4);
+scatter(Xgrid_flat(wp_2),Ygrid_flat(wp_2),14,...
+        'pentagramk','MarkerFaceColor','k');
+xlabel('X','FontWeight','bold'); ylabel('Y','FontWeight','bold');
+axis([0 x_lim 0 y_lim]);
+grid on, grid minor, axis on, box on;
+pbaspect([x_lim y_lim 1]);
+title(sprintf('Trial #%d (Max. Error)',imax));
+
+set(gcf,'Position',[200 200 800 600]);
+set(gcf,'PaperPositionMode','auto');
+saveas(gcf,'figures/waypoint_selection.png');
 
 %% Trajectory Optimization
 
@@ -88,9 +146,6 @@ a1 = 1;  % penalty for duration
 a2 = 1;  % penalty for energy cost
 
 f_shuffle = @(vec) vec(randperm(length(vec)));
-
-Xgrid_flat = f_flatten(Xgrid);
-Ygrid_flat = f_flatten(Ygrid);
 
 nseg = nwaypoints+1;
 
@@ -109,8 +164,8 @@ for i = 1:ntrials
     wp_x = [x_begin; Xgrid_flat(y); x_end];
     wp_y = [y_begin; Ygrid_flat(y); y_end];
 
-%     wp_x = [x_begin; 1.5; 1.55; 0.75; 0.3; 1.2; x_end;];
-%     wp_y = [y_begin; 0.15; 0.75; 0.4; 0.8; 0.2; y_end;];
+%     wp_x = [x_begin; 1.5; 1.55; 0.75; 0.4; 1.2; x_end];
+%     wp_y = [y_begin; 0.15; 0.75; 0.25; 0.8; 0.2; y_end];
 
     nlp.opti.set_value(nlp.params.wp_x, wp_x);
     nlp.opti.set_value(nlp.params.wp_y, wp_y);
@@ -140,6 +195,27 @@ for i = 1:ntrials
     end
 end
 
+% -- Trajectory plot
+t = 0:0.01:1;  % spline parameter
+tm = [t.^0; t.^1; t.^2; t.^3; t.^4]';
+x_vals = tm*traj_ax; y_vals = tm*traj_ay;
+figure; colormap winter;
+quiverC2D(Xgrid,Ygrid,ux(:,:,1),uy(:,:,1),'Colorbar',true);
+hold on; box on;
+scatter(wp_x(1),wp_y(1),'sk','MarkerFaceColor','k');
+scatter(wp_x(end),wp_y(end),'^k','MarkerFaceColor','k');
+scatter(wp_x(2:end-1),wp_y(2:end-1),10,'ok','MarkerFaceColor','k');
+text(wp_x(2:end-1),wp_y(2:end-1)-0.03,num2str((1:nwaypoints)'));
+plot(x_vals(:),y_vals(:),'k');
+xlabel('X','FontWeight','bold');
+ylabel('Y','FontWeight','bold');
+axis([0 x_lim 0 y_lim]);
+title('Optimized Trajectory','FontSize',12);
+pbaspect([x_lim y_lim 1]);
+set(gcf,'Position',[200 200 960 540]);
+set(gcf,'PaperPositionMode','auto');
+saveas(gcf,'figures/trajectory_C1.png');
+
 %% Flow Reconstruction
 
 x_seg = traj_x(traj_tp < 0.75*t_lim);
@@ -167,65 +243,10 @@ emat = urx - ux_true;
 % -- Normalize
 f_norm = @(mat) -1+2.*(mat-min(mat,[],'all'))./...
                 (max(mat,[],'all')-min(mat,[],'all'));
-
 ux_true = f_norm(ux_true);
 urx = f_norm(urx);
 
-%% Plots
-
-close all;
-
-% -- POD mode energy distribution plot
-tke = 100*SIG/sum(SIG);
-figure;
-plot(tke(1:10),'o--k','MarkerFaceColor','k','MarkerSize',4), grid on;
-xlabel('Mode','FontWeight','bold');
-ylabel('Energy (%)','FontWeight','bold');
-axis([1 10 0 100]);
-xline(nmodes,'-r');
-text(nmodes+0.1,60,sprintf('r = %d',nmodes));
-cum_energy = sum(tke(1:nmodes));
-cum_energy = fix(100*cum_energy)/100;
-text(nmodes+0.1,55,sprintf('Cum. Energy = ~%.2f%%',cum_energy));
-title('Contribution of First 10 POD modes to Energy','fontsize',12);
-set(gcf,'Position',[200 200 800 600]);
-set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/pod_mode_energy_dist.png');
-
-% -- Waypoint selection - reconstruction error plot
-[wp_error,isorted] = sort(wp_error,'descend');
-figure;
-plot(1:size(wp_error,2), wp_error, 's--k','MarkerFaceColor','k'), grid on;
-xlabel('Trials','FontWeight','bold');
-ylabel('Error','FontWeight','bold');
-xlim([1 size(wp_error,2)]);
-title('Waypoint Trials v/s Reconstruction Error','FontSize',12);
-set(gcf,'Position',[200 200 800 600]);
-set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/waypoint_selection.png');
-
-% -- Trajectory plot
-t = 0:0.01:1;  % spline parameter
-tm = [t.^0; t.^1; t.^2; t.^3; t.^4]';
-x_vals = tm*traj_ax; y_vals = tm*traj_ay;
-figure; colormap winter;
-quiverC2D(Xgrid,Ygrid,ux(:,:,1),uy(:,:,1),'Colorbar',true);
-hold on; box on;
-scatter(wp_x(1),wp_y(1),'sk','MarkerFaceColor','k');
-scatter(wp_x(end),wp_y(end),'^k','MarkerFaceColor','k');
-scatter(wp_x(2:end-1),wp_y(2:end-1),10,'ok','MarkerFaceColor','k');
-text(wp_x(2:end-1),wp_y(2:end-1)-0.03,num2str((1:nwaypoints)'));
-plot(x_vals(:),y_vals(:),'k');
-xlabel('X','FontWeight','bold');
-ylabel('Y','FontWeight','bold');
-axis([0 x_lim 0 y_lim]);
-title('Optimized Trajectory','FontSize',12);
-pbaspect([x_lim y_lim 1]);
-set(gcf,'Position',[200 200 960 540]);
-set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/trajectory_C1.png');
-
-% -- Reconstruction
+% -- Reconstruction plots
 figure; colormap jet;
 plt = pcolor(Xgrid,Ygrid,ux_true);
 plt.EdgeColor = 'none';
