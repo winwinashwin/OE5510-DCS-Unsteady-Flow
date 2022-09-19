@@ -82,7 +82,7 @@ y(y>nx*ny) = y(y>nx*ny) - nx*ny;
 % -- Parameters
 x_begin = 0.10; y_begin = 0.05;
 x_end = 1.90; y_end = 0.95;
-ntrials = 1;
+ntrials = 7;
 v_max = 0.7;
 a1 = 1;  % penalty for duration
 a2 = 1;  % penalty for energy cost
@@ -109,13 +109,14 @@ for i = 1:ntrials
     wp_x = [x_begin; Xgrid_flat(y); x_end];
     wp_y = [y_begin; Ygrid_flat(y); y_end];
 
-    wp_x = [x_begin; 1.5; 1.55; 0.75; 0.3; 1.2; x_end;];
-    wp_y = [y_begin; 0.15; 0.75; 0.4; 0.8; 0.2; y_end;];
+%     wp_x = [x_begin; 1.5; 1.55; 0.75; 0.3; 1.2; x_end;];
+%     wp_y = [y_begin; 0.15; 0.75; 0.4; 0.8; 0.2; y_end;];
 
     nlp.opti.set_value(nlp.params.wp_x, wp_x);
     nlp.opti.set_value(nlp.params.wp_y, wp_y);
     nlp.opti.set_value(nlp.params.x_lim, x_lim);
     nlp.opti.set_value(nlp.params.y_lim, y_lim);
+    nlp.opti.set_value(nlp.params.t_lim, t_lim);
     nlp.opti.set_value(nlp.params.v_max, v_max);
     nlp.opti.set_value(nlp.params.a1, a1);
     nlp.opti.set_value(nlp.params.a2, a2);
@@ -123,14 +124,17 @@ for i = 1:ntrials
     try
         sol = nlp.opti.solve();
 
-        if sol.value(nlp.obj) < prev_obj_val
-            prev_obj_val = sol.value(nlp.obj);
-            traj_ax = sol.value(nlp.vars.ax);
-            traj_ay = sol.value(nlp.vars.ay);
-            traj_x = sol.value(nlp.traj_x);
-            traj_y = sol.value(nlp.traj_y);
-            traj_tp = sol.value(nlp.vars.tp);
+        if sol.value(nlp.obj) > prev_obj_val
+            continue;
         end
+
+        prev_obj_val = sol.value(nlp.obj);
+        traj_ax = sol.value(nlp.vars.ax);
+        traj_ay = sol.value(nlp.vars.ay);
+        traj_x = sol.value(nlp.traj_x);
+        traj_y = sol.value(nlp.traj_y);
+        traj_tp = sol.value(nlp.vars.tp);
+
     catch ME
         continue;
     end

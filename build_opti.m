@@ -16,6 +16,7 @@ function nlp = build_opti(nseg,t,A,e,w)
     wp_y = opti.parameter(nseg+1,1);
     x_lim = opti.parameter();
     y_lim = opti.parameter();
+    t_lim = opti.parameter();
     v_max = opti.parameter();
     a1 = opti.parameter();
     a2 = opti.parameter();
@@ -41,9 +42,11 @@ function nlp = build_opti(nseg,t,A,e,w)
     opti.subject_to( { y_vals(:) >= 0, y_vals(:) <= y_lim } );
 
     % -- Constrain velocity
-    % End value of ith segment and start value of (i+1)th segment are equal.
-    % We'll get rid of the final row (duplicate) and flatten the matrix to a 
-    % vector for imposing velocity constraints
+    % `x_vals` and `y_vals` are matrices, each column representing the
+    % corresponding coordinates. First element in (i+1)th column and last
+    % element in ith column are equal. We get rid of the last row and 
+    % flatten the resulting truncated matrix for imposing velocity 
+    % constriant
     x_vals_flat = x_vals(1:end-1,:);
     x_vals_flat = x_vals_flat(:);
     y_vals_flat = y_vals(1:end-1,:);
@@ -59,6 +62,7 @@ function nlp = build_opti(nseg,t,A,e,w)
     for i = 1:length(tp)-1
         opti.subject_to( tp(i) < tp(i+1) );
     end
+    opti.subject_to( tp(end) <= t_lim );
 
     % -- Compute actuation energy cost
     E = 0;
@@ -95,6 +99,7 @@ function nlp = build_opti(nseg,t,A,e,w)
     nlp.params.wp_y = wp_y;
     nlp.params.x_lim = x_lim;
     nlp.params.y_lim = y_lim;
+    nlp.params.t_lim = t_lim;
     nlp.params.v_max = v_max;
     nlp.params.a1 = a1;
     nlp.params.a2 = a2;
