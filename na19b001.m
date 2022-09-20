@@ -1,5 +1,9 @@
 clc; close all; clear all;
 
+mkdir figures;  % create media folder if not present
+
+%% Parameters
+
 x_lim = 2; nx = 50;
 y_lim = 1; ny = 25;
 t_lim = 40;
