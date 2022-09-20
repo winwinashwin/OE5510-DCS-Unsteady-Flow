@@ -11,3 +11,18 @@ Heavily inspired by the paper [*"Dynamic Compressed Sensing of Unsteady Flows wi
 ## External Dependencies
 - [CVX](http://cvxr.com/cvx/download/)
 - [CasADi v3.5.5](https://web.casadi.org/get/)
+
+### Installation
+
+#### CVX
+- Download and extract the _Redistributable, all platform version_ of CVX v2.2 to a folder from the [official download page](http://cvxr.com/cvx/download/)
+- Navigate to the CVX folder from MATLAB command line and run `cvx_setup` command.
+
+#### CasADi
+- Download and extract CasADi v3.5.5 corresponding to your OS and MATLAB version from the [official download page](https://web.casadi.org/get/)
+- From MATLAB command line, add CasADi to MATLAB path by running the command
+```MATLAB
+addpath('<your-casadi-installation-path>')
+```
+
+Please run the test script `test_pkg_installation.m` to make sure the packages have been installed and setup correctly.
