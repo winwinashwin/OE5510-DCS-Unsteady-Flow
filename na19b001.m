@@ -66,7 +66,7 @@ text(nmodes+0.1,55,sprintf('Cum. Energy = ~%.2f%%',cum_energy));
 title('Contribution of First 10 POD modes to Energy','fontsize',12);
 set(gcf,'Position',[200 200 800 600]);
 set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/pod_mode_energy_dist.png');
+exportgraphics(gcf,'figures/pod_mode_energy_dist.png');
 
 %% Optimal Waypoint Selection
 
@@ -137,7 +137,7 @@ title(sprintf('Trial #%d (Max. Error)',imax));
 
 set(gcf,'Position',[200 200 800 600]);
 set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/waypoint_selection.png');
+exportgraphics(gcf,'figures/waypoint_selection.png');
 
 %% Trajectory Optimization
 
@@ -218,7 +218,7 @@ title('Optimized Trajectory','FontSize',12);
 pbaspect([x_lim y_lim 1]);
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/trajectory_C1.png');
+exportgraphics(gcf,'figures/trajectory_C1.png');
 
 %% Flow Reconstruction
 
@@ -261,7 +261,7 @@ title(sprintf('Reference Flow Map (u-component) at t = %.2fs',...
 pbaspect([x_lim y_lim 1]); colorbar;
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/flow_u_ref.png');
+exportgraphics(gcf,'figures/flow_u_ref.png');
 
 figure; colormap jet;
 plt = pcolor(Xgrid,Ygrid,urx);
@@ -273,7 +273,7 @@ title(sprintf('Reconstructed Flow Map (u-component) at t = %.2fs',...
 pbaspect([x_lim y_lim 1]); colorbar;
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/flow_u_recons.png');
+exportgraphics(gcf,'figures/flow_u_recons.png');
 
 figure; colormap jet;
 plt = pcolor(Xgrid,Ygrid,emat);
@@ -286,4 +286,4 @@ title(sprintf(...
 pbaspect([x_lim y_lim 1]); colorbar;
 set(gcf,'Position',[200 200 960 540]);
 set(gcf,'PaperPositionMode','auto');
-saveas(gcf,'figures/flow_u_error.png');
+exportgraphics(gcf,'figures/flow_u_error.png');
