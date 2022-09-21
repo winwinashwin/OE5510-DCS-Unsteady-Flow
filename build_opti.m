@@ -93,7 +93,6 @@ function nlp = build_opti(nseg,t,A,e,w)
     nlp.vars.ax = ax;
     nlp.vars.ay = ay;
     nlp.vars.tp = tp;
-    nlp.vars.sl = sl;
     
     nlp.params.wp_x = wp_x;
     nlp.params.wp_y = wp_y;
